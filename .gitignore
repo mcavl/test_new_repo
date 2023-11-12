@@ -73,3 +73,6 @@ build-iPhoneSimulator/
 coverage/
 config/master.key
 .DS_Store
+
+# Ignore master key for decrypting credentials and more.
+/config/master.key
