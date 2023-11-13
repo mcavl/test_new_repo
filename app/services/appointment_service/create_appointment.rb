@@ -1,11 +1,6 @@
 # frozen_string_literal: true
 
 module AppointmentService
-  class ClinicIsClosed < StandardError; end
-  class PatientAlreadyBooked < StandardError; end
-  class PractitionerNotAvailable < StandardError; end
-  class TimeNotAvailable < StandardError; end
-
   class CreateAppointment < BaseService
     def call
       validate_start_time
@@ -21,18 +16,6 @@ module AppointmentService
 
     private
 
-    def clinic
-      @clinic ||= find_clinic
-    end
-
-    def find_clinic
-      clinic = Clinic.find_by(id: arguments[:clinic_id])
-
-      raise 'Clinic not found' if clinic.nil?
-
-      clinic
-    end
-
     def start_time
       @start_time ||= TimeUtils.time_from_timezone(clinic.timezone, arguments[:start_time])
     end
@@ -44,14 +27,14 @@ module AppointmentService
     # Checks if start time complies with all requirements
     def validate_start_time
       if start_time < clinic.opening_time(arguments[:start_time])
-        raise ClinicIsClosed,
+        raise ::AppointmentService::Errors::ClinicIsClosed,
               "Clinic opens at #{clinic.open_time}"
       end
 
       unless minimum_allowed_start_time
-        raise TimeNotAvailable, 'Appointments cannot be made within 2 hours of the appointment start time.'
+        raise ::AppointmentService::Errors::TimeNotAvailable, 'Appointments cannot be made within 2 hours of the appointment start time.'
       end
-      raise TimeNotAvailable, 'Appointments start on the hour or half-hour.' unless valid_start_time_format
+      raise ::AppointmentService::Errors::TimeNotAvailable, 'Appointments start on the hour or half-hour.' unless valid_start_time_format
     end
 
     def valid_start_time_format
@@ -66,7 +49,7 @@ module AppointmentService
     def validate_end_time
       return unless end_time > clinic.closing_time(arguments[:start_time])
 
-      raise ClinicIsClosed,
+      raise ::AppointmentService::Errors::ClinicIsClosed,
             "Clinic closes at #{clinic.close_time}"
     end
 
@@ -74,13 +57,13 @@ module AppointmentService
     def validate_patient_availability
       patient_appointment = Appointment.patient_is_booked_at(arguments[:patient_id], arguments[:clinic_id],
                                                              start_time)
-      raise PatientAlreadyBooked, 'Patient already booked' unless patient_appointment.blank?
+      raise ::AppointmentService::Errors::PatientAlreadyBooked, 'Patient already booked' unless patient_appointment.blank?
     end
 
     def validate_practitioner_availability
       practitioner_appointment = Appointment.practitioner_is_booked_at(arguments[:practitioner_id], arguments[:clinic_id],
                                                                        start_time)
-      raise PractitionerNotAvailable, 'Practitioner already booked' unless practitioner_appointment.blank?
+      raise ::AppointmentService::Errors::PractitionerNotAvailable, 'Practitioner already booked' unless practitioner_appointment.blank?
     end
   end
 end

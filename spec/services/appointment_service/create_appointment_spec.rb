@@ -60,7 +60,7 @@ RSpec.describe AppointmentService::CreateAppointment do
           expect(Appointment).not_to receive(:create!)
           described_class.call(args)
         end
-      end.to raise_error(AppointmentService::TimeNotAvailable, 'Appointments cannot be made within 2 hours of the appointment start time.')
+      end.to raise_error(AppointmentService::Errors::TimeNotAvailable, 'Appointments cannot be made within 2 hours of the appointment start time.')
     end
 
     it 'does not create appointment when start_time is not the hour or half-hour' do
@@ -76,7 +76,7 @@ RSpec.describe AppointmentService::CreateAppointment do
           expect(Appointment).not_to receive(:create!)
           described_class.call(args)
         end
-      end.to raise_error(AppointmentService::TimeNotAvailable, 'Appointments start on the hour or half-hour.')
+      end.to raise_error(AppointmentService::Errors::TimeNotAvailable, 'Appointments start on the hour or half-hour.')
     end
 
     it "does not create appointment when start_time is before clinic's work time" do
@@ -92,7 +92,7 @@ RSpec.describe AppointmentService::CreateAppointment do
           expect(Appointment).not_to receive(:create!)
           described_class.call(args)
         end
-      end.to raise_error(AppointmentService::ClinicIsClosed, 'Clinic opens at 09:00')
+      end.to raise_error(AppointmentService::Errors::ClinicIsClosed, 'Clinic opens at 09:00')
     end
 
     it "does not create appointment when start_time is after clinic's work time" do
@@ -108,7 +108,7 @@ RSpec.describe AppointmentService::CreateAppointment do
           expect(Appointment).not_to receive(:create!)
           described_class.call(args)
         end
-      end.to raise_error(AppointmentService::ClinicIsClosed, 'Clinic closes at 17:00')
+      end.to raise_error(AppointmentService::Errors::ClinicIsClosed, 'Clinic closes at 17:00')
     end
 
     it 'does not create appointment when patient is already booked' do
@@ -124,7 +124,7 @@ RSpec.describe AppointmentService::CreateAppointment do
           expect(Appointment).not_to receive(:create!)
           described_class.call(args)
         end
-      end.to raise_error(AppointmentService::PatientAlreadyBooked, 'Patient already booked')
+      end.to raise_error(AppointmentService::Errors::PatientAlreadyBooked, 'Patient already booked')
     end
 
     it 'does not create appointment when practitioner is already booked' do
@@ -140,7 +140,7 @@ RSpec.describe AppointmentService::CreateAppointment do
           expect(Appointment).not_to receive(:create!)
           described_class.call(args)
         end
-      end.to raise_error(AppointmentService::PractitionerNotAvailable, 'Practitioner already booked')
+      end.to raise_error(AppointmentService::Errors::PractitionerNotAvailable, 'Practitioner already booked')
     end
   end
   # rubocop:enable Metrics/BlockLength
