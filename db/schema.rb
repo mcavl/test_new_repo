@@ -12,14 +12,16 @@
 
 ActiveRecord::Schema[7.1].define(version: 2023_11_12_223445) do
   create_table "appointments", force: :cascade do |t|
-    t.datetime "start_time"
-    t.datetime "end_time"
-    t.string "appointment_type"
+    t.datetime "start_time", null: false
+    t.datetime "end_time", null: false
+    t.string "appointment_type", null: false
     t.integer "practitioner_id", null: false
     t.integer "patient_id", null: false
     t.integer "clinic_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["clinic_id", "patient_id"], name: "index_appointments_on_clinic_id_and_patient_id"
+    t.index ["clinic_id", "practitioner_id"], name: "index_appointments_on_clinic_id_and_practitioner_id"
     t.index ["clinic_id"], name: "index_appointments_on_clinic_id"
     t.index ["patient_id"], name: "index_appointments_on_patient_id"
     t.index ["practitioner_id"], name: "index_appointments_on_practitioner_id"
