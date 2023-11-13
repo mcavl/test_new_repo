@@ -33,5 +33,8 @@ module ClinicApp
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+    config.enable_dependency_loading = true
+    config.autoload_paths += %W[#{config.root}/app/services]
+    config.autoload_paths += %W[#{config.root}/lib]
   end
 end
