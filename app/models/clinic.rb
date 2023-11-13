@@ -17,13 +17,13 @@ class Clinic < ApplicationRecord
 
   validates :name, :close_time, :open_time, :timezone, presence: true
 
-  def closing_time(time)
+  def closing_time(time = nil)
     time = Time.now if time.nil?
 
     TimeUtils.time_from_timezone(timezone, "#{time.to_date.to_s} #{close_time}")
   end
 
-  def opening_time(time)
+  def opening_time(time = nil)
     time = Time.now if time.nil?
 
     TimeUtils.time_from_timezone(timezone, "#{time.to_date.to_s} #{open_time}")
