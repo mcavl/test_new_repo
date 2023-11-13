@@ -265,6 +265,7 @@ DEPENDENCIES
   sprockets-rails
   sqlite3 (~> 1.4)
   timecop (~> 0.9.8)
+  tzinfo (~> 2.0, >= 2.0.6)
   tzinfo-data
 
 RUBY VERSION

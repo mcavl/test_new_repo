@@ -18,6 +18,7 @@ gem 'sqlite3', '~> 1.4'
 gem 'puma', '~> 5.0'
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
+gem 'tzinfo', '~> 2.0', '>= 2.0.6'
 gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
 
 group :development, :test do
