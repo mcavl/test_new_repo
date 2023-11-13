@@ -22,8 +22,8 @@ RSpec.describe AppointmentService::CreateAppointment do
                        end_time: Time.find_zone(clinic.timezone).parse('2002-10-31 10:30'),
                        appointment_type: Appointments::AppointmentTypes::INITIAL_CONSULTATION)
   end
-  # rubocop:enable Metrics/BlockLength
 
+  # rubocop:disable Metrics/BlockLength
   describe '#call' do
     it 'creates an appointment with valid parameters' do
       Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 08:00')) do
@@ -143,4 +143,5 @@ RSpec.describe AppointmentService::CreateAppointment do
       end.to raise_error(AppointmentService::PractitionerNotAvailable, 'Practitioner already booked')
     end
   end
+  # rubocop:enable Metrics/BlockLength
 end
