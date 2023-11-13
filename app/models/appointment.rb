@@ -39,16 +39,11 @@ class Appointment < ApplicationRecord
   belongs_to :clinic
   enum appointment_type: Appointments::AppointmentTypes::TYPES
 
-  validates :start_time, :end_time, :practitioner_id, :patient_id, :clinic_id, presence: true
+  validates :start_time, :end_time, presence: true
 
   validate :should_belong_to_same_clinic
   validate :booking_period_validation
-
-  scope :clinic_schedule, lambda { |clinic_id, start_date, end_date|
-    where(clinic_id:)
-      .where(start_time: start_date..end_date)
-      .order(:start_time)
-  }
+  validate :booking_in_the_past
 
   scope :practitioner_is_booked_at, lambda { |practitioner_id, clinic_id, start_time|
     where(practitioner_id:)
@@ -72,14 +67,23 @@ class Appointment < ApplicationRecord
 
   def should_belong_to_same_clinic
     REFERENCES.each do |field, klass|
-      obj = klass.find_by(id: self[field])
+      current_value = self[field]
+      next if current_value.nil?
+
+      obj = klass.find_by(id: current_value)
       errors.add(field, 'should belong to same clinic') if obj.clinic_id != self[:clinic_id]
     end
   end
 
   def booking_period_validation
-    return unless end_time.present? && start_time.present? && (end_time - start_time) <= 0
+    return unless end_time.present? && start_time.present? && (end_time - start_time).negative?
 
-    errors.add(:end_time, "can't be less or equal start_time")
+    errors.add(:end_time, "can't be before start_time")
+  end
+
+  def booking_in_the_past
+    now = Time.now
+    errors.add(:start_time, "can't be in the past") if start_time < now
+    errors.add(:end_time, "can't be in the past") if end_time < now
   end
 end
