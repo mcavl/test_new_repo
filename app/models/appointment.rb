@@ -43,7 +43,6 @@ class Appointment < ApplicationRecord
 
   validate :should_belong_to_same_clinic
   validate :booking_period_validation
-  validate :booking_in_the_past
 
   scope :practitioner_is_booked_at, lambda { |practitioner_id, clinic_id, start_time|
     where(practitioner_id:)
@@ -76,14 +75,8 @@ class Appointment < ApplicationRecord
   end
 
   def booking_period_validation
-    return unless end_time.present? && start_time.present? && (end_time - start_time).negative?
+    return unless end_time.present? && start_time.present?
 
-    errors.add(:end_time, "can't be before start_time")
-  end
-
-  def booking_in_the_past
-    now = Time.now
-    errors.add(:start_time, "can't be in the past") if start_time < now
-    errors.add(:end_time, "can't be in the past") if end_time < now
+    errors.add(:end_time, "can't be before start_time") if (end_time - start_time).negative?
   end
 end

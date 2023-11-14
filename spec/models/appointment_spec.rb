@@ -127,17 +127,5 @@ RSpec.describe Appointment, type: :model do
         expect(appointment.errors[:end_time]).to eq(["can't be before start_time"])
       end
     end
-
-    it 'does not create an appointment when dates are in the past' do
-      Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 08:00')) do
-        appointment = Appointment.build(clinic:, practitioner:, patient:,
-                                        start_time: Time.find_zone(clinic.timezone).parse('2002-09-31 09:00'),
-                                        end_time: Time.find_zone(clinic.timezone).parse('2002-09-31 10:30'),
-                                        appointment_type: Appointments::AppointmentTypes::INITIAL_CONSULTATION)
-        expect(appointment.valid?).to be(false)
-        expect(appointment.errors[:start_time]).to eq(["can't be in the past"])
-        expect(appointment.errors[:end_time]).to eq(["can't be in the past"])
-      end
-    end
   end
 end
