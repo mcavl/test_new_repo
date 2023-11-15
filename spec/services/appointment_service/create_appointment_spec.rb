@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe AppointmentService::CreateAppointment do
+RSpec.describe AppointmentService::CreateAppointment, type: service do
   let(:gmt_offset) { '-10' }
   let!(:clinic) do
     FactoryBot.create(:clinic, name: 'Physio Jane', open_time: '09:00',
