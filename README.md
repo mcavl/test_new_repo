@@ -27,11 +27,11 @@
 - Database creation: To make things easy, this project uses SQLite3. It will be created as the tests runs.
     - If needed, database can be created by running:
         - DEV:
-        - ```
+      ```
       bundle exec rake db:migrate
       ```
         - TESTS:
-        - ```
+      ```
       RAILS_ENV=test bundle exec rake db:migration
       ```
 
