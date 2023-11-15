@@ -14,7 +14,7 @@ module AppointmentService
     private
 
     def validate_date
-      return unless Date.parse(arguments.date) < Date.today
+      return unless Date.parse(arguments.date) < clinic.current_time.to_date
 
       raise ::AppointmentService::Errors::DateInThePast, 'Date should be greater or equals today'
     end
@@ -66,16 +66,11 @@ module AppointmentService
     end
 
     def possible_start_time
-      return next_available_start_time if Time.parse(arguments.date).to_date == Time.now.to_date
+      if TimeUtils.time_from_timezone(clinic.timezone, arguments.date).to_date == clinic.current_time.to_date
+        return ::AppointmentService::NextAvailableTime.call(clinic_id: clinic.id)
+      end
 
       clinic.opening_time(arguments.date)
-    end
-
-    def next_available_start_time
-      now = Time.now
-      min = now.min <= 30 ? 30 : 0
-      hour = now.min <= 30 ? Time.now.hour + 2 : Time.now.hour + 3
-      Time.new(now.year, now.month, now.day, hour, min, 0, ActiveSupport::TimeZone[clinic.timezone])
     end
 
     def generate_daily_appointments
@@ -99,12 +94,12 @@ module AppointmentService
     end
 
     def find_practitioner_appointments
-      args = ::AppointmentService::PractitionerAppointments::INPUT.new(
+      args = ::PractitionerService::PractitionerAppointments::INPUT.new(
         practitioner_id: arguments.practitioner_id,
-        clinic_id: arguments.clinic_id,
+        clinic_id: clinic.id,
         date: arguments.date
       )
-      appointments = ::AppointmentService::PractitionerAppointments.call args
+      appointments = ::PractitionerService::PractitionerAppointments.call args
       appointments.map do |appointment|
         ::AppointmentService::AppointmentSlot.new(start_time: appointment.start_time, end_time: appointment.end_time)
       end
