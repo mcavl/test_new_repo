@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module AppointmentService
+module PractitionerService
   class PractitionerAppointments < BaseService
     INPUT = Struct.new(:practitioner_id, :clinic_id, :date, keyword_init: true)
 
