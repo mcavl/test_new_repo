@@ -6,7 +6,7 @@ class BaseService
   end
 
   def self.call(args)
-    raise ::AppointmentService::Errors::ClinicIdMissing, 'Missing clinic id' if args[:clinic_id].nil?
+    validate_clinic_arguments(args)
 
     new(args).call
   end
@@ -16,6 +16,10 @@ class BaseService
   end
 
   private
+
+  def self.validate_clinic_arguments(args)
+    raise ::AppointmentService::Errors::ClinicIdMissing, 'Missing clinic id' if args[:clinic_id].nil?
+  end
 
   attr_reader :arguments
 
