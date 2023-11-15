@@ -20,5 +20,8 @@
 require 'rails_helper'
 
 RSpec.describe Patient, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  describe 'Validations' do
+    it { is_expected.to belong_to(:clinic) }
+    it { is_expected.to have_many(:appointments) }
+  end
 end
