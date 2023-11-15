@@ -40,7 +40,6 @@ class Appointment < ApplicationRecord
   enum appointment_type: Appointments::AppointmentTypes::TYPES
 
   validates :start_time, :end_time, presence: true
-
   validate :should_belong_to_same_clinic
   validate :booking_period_validation
 
