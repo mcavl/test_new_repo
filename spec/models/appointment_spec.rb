@@ -42,6 +42,15 @@ RSpec.describe Appointment, type: :model do
   end
   let(:patient) { FactoryBot.create(:patient, first_name: 'Robin', last_name: 'Clark', clinic:) }
 
+  describe 'validations' do
+    it { is_expected.to belong_to(:clinic) }
+    it { is_expected.to belong_to(:patient) }
+    it { is_expected.to belong_to(:practitioner) }
+    it { is_expected.to validate_presence_of(:start_time) }
+    it { is_expected.to validate_presence_of(:end_time) }
+    it { is_expected.to define_enum_for(:appointment_type).with_values(::Appointments::AppointmentTypes::TYPES).backed_by_column_of_type(:string) }
+  end
+
   describe 'create' do
     it 'creates an appointment when all parameters are valid' do
       Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 08:00')) do
