@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe AppointmentService::CreateAppointment do
-  let(:gmt_offset) { '-8' }
+  let(:gmt_offset) { '-10' }
   let!(:clinic) do
     FactoryBot.create(:clinic, name: 'Physio Jane', open_time: '09:00',
                                close_time: '17:00', timezone: TimeUtils.tz(gmt_offset))
@@ -18,8 +18,8 @@ RSpec.describe AppointmentService::CreateAppointment do
 
   before do
     Appointment.create(clinic:, practitioner: practitioner1, patient: patient1,
-                       start_time: Time.find_zone(clinic.timezone).parse('2002-10-31 09:00'),
-                       end_time: Time.find_zone(clinic.timezone).parse('2002-10-31 10:30'),
+                       start_time: TimeUtils.time_from_timezone(clinic.timezone, '2002-10-31 09:00'),
+                       end_time: TimeUtils.time_from_timezone(clinic.timezone, '2002-10-31 10:30'),
                        appointment_type: Appointments::AppointmentTypes::INITIAL_CONSULTATION)
   end
 
@@ -27,11 +27,12 @@ RSpec.describe AppointmentService::CreateAppointment do
   describe '#call' do
     it 'creates an appointment with valid parameters' do
       Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 08:00')) do
+        start_time = '2002-10-31 11:00'
         args = {
           clinic_id: clinic.id,
           practitioner_id: practitioner1.id,
           patient_id: patient2.id,
-          start_time: Time.parse('2002-10-31 11:00').iso8601,
+          start_time: TimeUtils.time_from_timezone(clinic.timezone, start_time).iso8601,
           appointment_type: Appointments::AppointmentTypes::STANDARD
         }
         start_time = TimeUtils.time_from_timezone(clinic.timezone, args[:start_time])
@@ -50,11 +51,12 @@ RSpec.describe AppointmentService::CreateAppointment do
     it 'does not create appointment when start_time is within 2 hours' do
       expect do
         Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-31 10:30')) do
+          start_time = '2002-10-31 11:00'
           args = {
             clinic_id: clinic.id,
             practitioner_id: practitioner1.id,
             patient_id: patient2.id,
-            start_time: Time.parse('2002-10-31 11:00').iso8601,
+            start_time: TimeUtils.time_from_timezone(clinic.timezone, start_time).iso8601,
             appointment_type: Appointments::AppointmentTypes::STANDARD
           }
           expect(Appointment).not_to receive(:create!)
@@ -66,11 +68,12 @@ RSpec.describe AppointmentService::CreateAppointment do
     it 'does not create appointment when start_time is not the hour or half-hour' do
       expect do
         Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 10:30')) do
+          start_time = '2002-10-31 11:22'
           args = {
             clinic_id: clinic.id,
             practitioner_id: practitioner1.id,
             patient_id: patient2.id,
-            start_time: Time.parse('2002-10-31 11:22').iso8601,
+            start_time: TimeUtils.time_from_timezone(clinic.timezone, start_time).iso8601,
             appointment_type: Appointments::AppointmentTypes::STANDARD
           }
           expect(Appointment).not_to receive(:create!)
@@ -82,11 +85,12 @@ RSpec.describe AppointmentService::CreateAppointment do
     it "does not create appointment when start_time is before clinic's work time" do
       expect do
         Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 08:30')) do
+          start_time = '2002-10-31 08:00'
           args = {
             clinic_id: clinic.id,
             practitioner_id: practitioner1.id,
             patient_id: patient2.id,
-            start_time: Time.parse('2002-10-31 08:00').iso8601,
+            start_time: TimeUtils.time_from_timezone(clinic.timezone, start_time).iso8601,
             appointment_type: Appointments::AppointmentTypes::STANDARD
           }
           expect(Appointment).not_to receive(:create!)
@@ -98,11 +102,12 @@ RSpec.describe AppointmentService::CreateAppointment do
     it "does not create appointment when start_time is after clinic's work time" do
       expect do
         Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 08:30')) do
+          start_time = '2002-10-31 19:00'
           args = {
             clinic_id: clinic.id,
             practitioner_id: practitioner1.id,
             patient_id: patient2.id,
-            start_time: Time.parse('2002-10-31 19:00').iso8601,
+            start_time: TimeUtils.time_from_timezone(clinic.timezone, start_time).iso8601,
             appointment_type: Appointments::AppointmentTypes::STANDARD
           }
           expect(Appointment).not_to receive(:create!)
@@ -114,11 +119,12 @@ RSpec.describe AppointmentService::CreateAppointment do
     it 'does not create appointment when patient is already booked' do
       expect do
         Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 08:30')) do
+          start_time = '2002-10-31 10:00'
           args = {
             clinic_id: clinic.id,
             practitioner_id: practitioner1.id,
             patient_id: patient1.id,
-            start_time: Time.parse('2002-10-31 10:00').iso8601,
+            start_time: TimeUtils.time_from_timezone(clinic.timezone, start_time).iso8601,
             appointment_type: Appointments::AppointmentTypes::STANDARD
           }
           expect(Appointment).not_to receive(:create!)
@@ -130,11 +136,12 @@ RSpec.describe AppointmentService::CreateAppointment do
     it 'does not create appointment when practitioner is already booked' do
       expect do
         Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 08:30')) do
+          start_time = '2002-10-31 10:00'
           args = {
             clinic_id: clinic.id,
             practitioner_id: practitioner1.id,
             patient_id: patient2.id,
-            start_time: Time.parse('2002-10-31 10:00').iso8601,
+            start_time: TimeUtils.time_from_timezone(clinic.timezone, start_time).iso8601,
             appointment_type: Appointments::AppointmentTypes::STANDARD
           }
           expect(Appointment).not_to receive(:create!)

@@ -26,15 +26,18 @@ module AppointmentService
 
     # Checks if start time complies with all requirements
     def validate_start_time
-      if start_time < clinic.opening_time(arguments[:start_time])
+      if start_time <= clinic.opening_time(arguments[:start_time])
         raise ::AppointmentService::Errors::ClinicIsClosed,
               "Clinic opens at #{clinic.open_time}"
       end
 
       unless minimum_allowed_start_time
-        raise ::AppointmentService::Errors::TimeNotAvailable, 'Appointments cannot be made within 2 hours of the appointment start time.'
+        raise ::AppointmentService::Errors::TimeNotAvailable,
+              'Appointments cannot be made within 2 hours of the appointment start time.'
       end
-      raise ::AppointmentService::Errors::TimeNotAvailable, 'Appointments start on the hour or half-hour.' unless valid_start_time_format
+      return if valid_start_time_format
+
+      raise ::AppointmentService::Errors::TimeNotAvailable, 'Appointments start on the hour or half-hour.'
     end
 
     def valid_start_time_format
@@ -42,7 +45,7 @@ module AppointmentService
     end
 
     def minimum_allowed_start_time
-      start_time >= Time.find_zone(clinic.timezone).now + 2.hours
+      start_time >= ::AppointmentService::NextAvailableTime.call(clinic_id: clinic.id)
     end
 
     # Checks if end time complies with all requirements
@@ -57,13 +60,17 @@ module AppointmentService
     def validate_patient_availability
       patient_appointment = Appointment.patient_is_booked_at(arguments[:patient_id], arguments[:clinic_id],
                                                              start_time)
-      raise ::AppointmentService::Errors::PatientAlreadyBooked, 'Patient already booked' unless patient_appointment.blank?
+      return if patient_appointment.blank?
+
+      raise ::AppointmentService::Errors::PatientAlreadyBooked, 'Patient already booked'
     end
 
     def validate_practitioner_availability
       practitioner_appointment = Appointment.practitioner_is_booked_at(arguments[:practitioner_id], arguments[:clinic_id],
                                                                        start_time)
-      raise ::AppointmentService::Errors::PractitionerNotAvailable, 'Practitioner already booked' unless practitioner_appointment.blank?
+      return if practitioner_appointment.blank?
+
+      raise ::AppointmentService::Errors::PractitionerNotAvailable, 'Practitioner already booked'
     end
   end
 end
