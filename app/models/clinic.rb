@@ -17,7 +17,8 @@ class Clinic < ApplicationRecord
   has_many :practitioners
   has_many :patients
 
-  validates :name, :close_time, :open_time, :timezone, presence: true
+  validates :name, :timezone, presence: true
+  validates :open_time, :close_time, format: { with: /\A([01]?[0-9]|2[0-3])\:[0-5][0-9]\z/, allow_blank: false}
 
   def closing_time(time = nil)
     time = current_time if time.nil?
