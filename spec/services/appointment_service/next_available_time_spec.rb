@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe AppointmentService::NextAvailableTime, type: service do
+RSpec.describe AppointmentService::NextAvailableTime, type: :service do
   describe 'when obtaining next available start time' do
     let(:gmt_offset) { '-3' }
     let(:clinic) do
