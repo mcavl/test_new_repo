@@ -25,27 +25,43 @@ RSpec.describe AppointmentService::CreateAppointment, type: :service do
 
   # rubocop:disable Metrics/BlockLength
   describe '#call' do
-    it 'creates an appointment with valid parameters' do
-      Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 08:00')) do
-        start_time = '2002-10-31 11:00'
-        args = {
-          clinic_id: clinic.id,
-          practitioner_id: practitioner1.id,
-          patient_id: patient2.id,
-          start_time: TimeUtils.time_from_timezone(clinic.timezone, start_time).iso8601,
-          appointment_type: Appointments::AppointmentTypes::STANDARD
-        }
-        start_time = TimeUtils.time_from_timezone(clinic.timezone, args[:start_time])
-        expect(Appointment).to receive(:create!).with({
-                                                        clinic:,
-                                                        practitioner_id: args[:practitioner_id],
-                                                        patient_id: args[:patient_id],
-                                                        start_time:,
-                                                        end_time: (start_time + Appointments::AppointmentTypes::DURATION[args[:appointment_type]]),
-                                                        appointment_type: args[:appointment_type]
-                                                      })
-        described_class.call(args)
+    describe 'when creating appointments' do
+      shared_examples 'creates an appointment appointment with valid parameters' do |appointment_type:, expected_duration:|
+        it 'creates an appointment' do
+          Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 08:00')) do
+            appointment_start_time = '2002-10-31 11:00'
+            args = {
+              clinic_id: clinic.id,
+              practitioner_id: practitioner1.id,
+              patient_id: patient2.id,
+              start_time: TimeUtils.time_from_timezone(clinic.timezone, appointment_start_time).iso8601,
+              appointment_type:
+            }
+            start_time = TimeUtils.time_from_timezone(clinic.timezone, args[:start_time])
+            expect(Appointment).to receive(:create!).with({
+                                                            clinic:,
+                                                            practitioner_id: args[:practitioner_id],
+                                                            patient_id: args[:patient_id],
+                                                            start_time:,
+                                                            end_time: (start_time + expected_duration),
+                                                            appointment_type: args[:appointment_type]
+                                                          })
+            described_class.call(args)
+          end
+        end
       end
+
+      it_behaves_like 'creates an appointment appointment with valid parameters',
+                      appointment_type: Appointments::AppointmentTypes::CHECK_IN,
+                      expected_duration: 30.minutes
+
+      it_behaves_like 'creates an appointment appointment with valid parameters',
+                      appointment_type: Appointments::AppointmentTypes::STANDARD,
+                      expected_duration: 60.minutes
+
+      it_behaves_like 'creates an appointment appointment with valid parameters',
+                      appointment_type: Appointments::AppointmentTypes::INITIAL_CONSULTATION,
+                      expected_duration: 90.minutes
     end
 
     it 'does not create appointment when start_time is within 2 hours' do
