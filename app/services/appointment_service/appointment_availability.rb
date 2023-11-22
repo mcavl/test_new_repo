@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
-# frozen_string_literal: true
-
 module AppointmentService
+  ##
+  # AppointmentAvailability generates practitioner availability on a specific day.
+  #
   class AppointmentAvailability < BaseService
-    INPUT = Struct.new(:practitioner_id, :clinic_id, :date, :appointment_type, keyword_init: true)
+    # INPUT contains the required parameters to execute the service
+    INPUT = Struct.new(:practitioner_id, :clinic_id, :clinic, :date, :appointment_type, keyword_init: true)
 
     def call
       validate_date
@@ -22,11 +24,10 @@ module AppointmentService
     # Using a 2 pointer approach, this method creates all possible appointments on a day, based on appointment type
     # It will loop through these 2 arrays and only add the available times excluding practitioner's agenda
     def practitioner_available_time_for_appointment_type
-      ## Variable Initialization
       # Initialize indexes
       index_daily_appointments = 0
       index_practitioner_appointments = 0
-      # Availability contains the result
+      # Availability will contain the result
       availability = []
       # Generate all possible daily appointments
       daily_appointments = generate_daily_appointments
@@ -67,7 +68,7 @@ module AppointmentService
 
     def possible_start_time
       if TimeUtils.time_from_timezone(clinic.timezone, arguments.date).to_date == clinic.current_time.to_date
-        return ::AppointmentService::NextAvailableTime.call(clinic_id: clinic.id)
+        return ::AppointmentService::NextAvailableTime.call(::AppointmentService::NextAvailableTime::INPUT.new(clinic:))
       end
 
       clinic.opening_time(arguments.date)
@@ -96,10 +97,10 @@ module AppointmentService
     def find_practitioner_appointments
       args = ::PractitionerService::PractitionerAppointments::INPUT.new(
         practitioner_id: arguments.practitioner_id,
-        clinic_id: clinic.id,
+        clinic:,
         date: arguments.date
       )
-      appointments = ::PractitionerService::PractitionerAppointments.call args
+      appointments = ::PractitionerService::PractitionerAppointments.call(args)
       appointments.map do |appointment|
         ::AppointmentService::AppointmentSlot.new(start_time: appointment.start_time, end_time: appointment.end_time)
       end

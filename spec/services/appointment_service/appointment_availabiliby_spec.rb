@@ -28,8 +28,8 @@ RSpec.describe AppointmentService::AppointmentAvailability, type: :service do
                            end_time: Time.find_zone(clinic.timezone).parse('2002-10-31 13:00'),
                            appointment_type: Appointments::AppointmentTypes::CHECK_IN),
         Appointment.create(clinic:, practitioner:, patient: patient1,
-                           start_time: Time.find_zone(clinic.timezone).parse('2002-10-31 15:30'),
-                           end_time: Time.find_zone(clinic.timezone).parse('2002-10-31 16:30'),
+                           start_time: Time.find_zone(clinic.timezone).parse('2002-10-31 15:00'),
+                           end_time: Time.find_zone(clinic.timezone).parse('2002-10-31 16:00'),
                            appointment_type: Appointments::AppointmentTypes::STANDARD)
       ]
     end
@@ -52,7 +52,7 @@ RSpec.describe AppointmentService::AppointmentAvailability, type: :service do
           { start_time: '2002-10-31T13:30:00-10:00', end_time: '2002-10-31T14:00:00-10:00' },
           { start_time: '2002-10-31T14:00:00-10:00', end_time: '2002-10-31T14:30:00-10:00' },
           { start_time: '2002-10-31T14:30:00-10:00', end_time: '2002-10-31T15:00:00-10:00' },
-          { start_time: '2002-10-31T15:00:00-10:00', end_time: '2002-10-31T15:30:00-10:00' },
+          { start_time: '2002-10-31T16:00:00-10:00', end_time: '2002-10-31T16:30:00-10:00' },
           { start_time: '2002-10-31T16:30:00-10:00', end_time: '2002-10-31T17:00:00-10:00' }
         ]
       end
@@ -64,7 +64,7 @@ RSpec.describe AppointmentService::AppointmentAvailability, type: :service do
             {
               date: '2002-10-31',
               practitioner_id: practitioner.id,
-              clinic_id: clinic.id,
+              clinic:,
               appointment_type: Appointments::AppointmentTypes::CHECK_IN
             }
           )
@@ -80,7 +80,7 @@ RSpec.describe AppointmentService::AppointmentAvailability, type: :service do
             {
               date: '2002-10-31',
               practitioner_id: practitioner.id,
-              clinic_id: clinic.id,
+              clinic:,
               appointment_type: Appointments::AppointmentTypes::CHECK_IN
             }
           )
@@ -95,22 +95,21 @@ RSpec.describe AppointmentService::AppointmentAvailability, type: :service do
       # Expected result:
       # Considering it's 9:51am on Dec 31st, and appointments can only be booked on the hour (or half-hour),
       # next allowed time slot will be at 12:00pm.
-      # Practitioner has an appointment from 12:30 until 13:00, so the time from 12:30-13:30 won't be available.
-      # Practitioner has an appointment from 15:30 pm until 16:30, so everything after 15:30 won't be allowed,
-      # as the clinic closes at 17:00 (5:00 pm).
+      # Practitioner has an appointment from 12:30 until 13:00, so the time from 12:30-13:30 won't be available,
+      # and also from 15:00 pm until 16:00 pm.
       expected_result = [
         { start_time: '2002-10-31T12:00:00-10:00', end_time: '2002-10-31T13:00:00-10:00' },
         { start_time: '2002-10-31T13:00:00-10:00', end_time: '2002-10-31T14:00:00-10:00' },
         { start_time: '2002-10-31T13:30:00-10:00', end_time: '2002-10-31T14:30:00-10:00' },
         { start_time: '2002-10-31T14:00:00-10:00', end_time: '2002-10-31T15:00:00-10:00' },
-        { start_time: '2002-10-31T14:30:00-10:00', end_time: '2002-10-31T15:30:00-10:00' }
+        { start_time: '2002-10-31T16:00:00-10:00', end_time: '2002-10-31T17:00:00-10:00' }
       ]
       Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse(current_time)) do
         args = AppointmentService::AppointmentAvailability::INPUT.new(
           {
             date: '2002-10-31',
             practitioner_id: practitioner.id,
-            clinic_id: clinic.id,
+            clinic:,
             appointment_type: Appointments::AppointmentTypes::STANDARD
           }
         )
@@ -129,7 +128,7 @@ RSpec.describe AppointmentService::AppointmentAvailability, type: :service do
           {
             date: '2002-10-31',
             practitioner_id: practitioner.id,
-            clinic_id: clinic.id,
+            clinic:,
             appointment_type: Appointments::AppointmentTypes::STANDARD
           }
         )
@@ -147,7 +146,7 @@ RSpec.describe AppointmentService::AppointmentAvailability, type: :service do
             {
               date: '2002-09-30',
               practitioner_id: practitioner.id,
-              clinic_id: clinic.id,
+              clinic:,
               appointment_type: Appointments::AppointmentTypes::STANDARD
             }
           )
@@ -189,7 +188,7 @@ RSpec.describe AppointmentService::AppointmentAvailability, type: :service do
           expect(::PractitionerService::PractitionerAppointments).not_to receive(:call)
           described_class.call(args)
         end
-      end.to raise_error(::AppointmentService::Errors::ClinicIdMissing, 'Missing clinic id')
+      end.to raise_error(::AppointmentService::Errors::ClinicMissing, 'Missing clinic')
     end
   end
 end
