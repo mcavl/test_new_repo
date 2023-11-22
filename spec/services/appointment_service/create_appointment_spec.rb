@@ -30,13 +30,13 @@ RSpec.describe AppointmentService::CreateAppointment, type: :service do
         it 'creates an appointment' do
           Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 08:00')) do
             appointment_start_time = '2002-10-31 11:00'
-            args = {
-              clinic_id: clinic.id,
+            args = described_class::INPUT.new(
+              clinic:,
               practitioner_id: practitioner1.id,
               patient_id: patient2.id,
               start_time: TimeUtils.time_from_timezone(clinic.timezone, appointment_start_time).iso8601,
               appointment_type:
-            }
+            )
             start_time = TimeUtils.time_from_timezone(clinic.timezone, args[:start_time])
             expect(Appointment).to receive(:create!).with({
                                                             clinic:,
@@ -68,13 +68,14 @@ RSpec.describe AppointmentService::CreateAppointment, type: :service do
       expect do
         Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-31 10:30')) do
           start_time = '2002-10-31 11:00'
-          args = {
-            clinic_id: clinic.id,
-            practitioner_id: practitioner1.id,
-            patient_id: patient2.id,
-            start_time: TimeUtils.time_from_timezone(clinic.timezone, start_time).iso8601,
-            appointment_type: Appointments::AppointmentTypes::STANDARD
-          }
+          args = described_class::INPUT.new({
+                                              clinic:,
+                                              practitioner_id: practitioner1.id,
+                                              patient_id: patient2.id,
+                                              start_time: TimeUtils.time_from_timezone(clinic.timezone,
+                                                                                       start_time).iso8601,
+                                              appointment_type: Appointments::AppointmentTypes::STANDARD
+                                            })
           expect(Appointment).not_to receive(:create!)
           described_class.call(args)
         end
@@ -86,13 +87,14 @@ RSpec.describe AppointmentService::CreateAppointment, type: :service do
       expect do
         Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 10:30')) do
           start_time = '2002-10-31 11:22'
-          args = {
-            clinic_id: clinic.id,
-            practitioner_id: practitioner1.id,
-            patient_id: patient2.id,
-            start_time: TimeUtils.time_from_timezone(clinic.timezone, start_time).iso8601,
-            appointment_type: Appointments::AppointmentTypes::STANDARD
-          }
+          args = described_class::INPUT.new({
+                                              clinic:,
+                                              practitioner_id: practitioner1.id,
+                                              patient_id: patient2.id,
+                                              start_time: TimeUtils.time_from_timezone(clinic.timezone,
+                                                                                       start_time).iso8601,
+                                              appointment_type: Appointments::AppointmentTypes::STANDARD
+                                            })
           expect(Appointment).not_to receive(:create!)
           described_class.call(args)
         end
@@ -103,13 +105,14 @@ RSpec.describe AppointmentService::CreateAppointment, type: :service do
       expect do
         Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 08:30')) do
           start_time = '2002-10-31 08:00'
-          args = {
-            clinic_id: clinic.id,
-            practitioner_id: practitioner1.id,
-            patient_id: patient2.id,
-            start_time: TimeUtils.time_from_timezone(clinic.timezone, start_time).iso8601,
-            appointment_type: Appointments::AppointmentTypes::STANDARD
-          }
+          args = described_class::INPUT.new({
+                                              clinic:,
+                                              practitioner_id: practitioner1.id,
+                                              patient_id: patient2.id,
+                                              start_time: TimeUtils.time_from_timezone(clinic.timezone,
+                                                                                       start_time).iso8601,
+                                              appointment_type: Appointments::AppointmentTypes::STANDARD
+                                            })
           expect(Appointment).not_to receive(:create!)
           described_class.call(args)
         end
@@ -120,13 +123,14 @@ RSpec.describe AppointmentService::CreateAppointment, type: :service do
       expect do
         Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse('2002-10-30 08:30')) do
           start_time = '2002-10-31 19:00'
-          args = {
-            clinic_id: clinic.id,
-            practitioner_id: practitioner1.id,
-            patient_id: patient2.id,
-            start_time: TimeUtils.time_from_timezone(clinic.timezone, start_time).iso8601,
-            appointment_type: Appointments::AppointmentTypes::STANDARD
-          }
+          args = described_class::INPUT.new({
+                                              clinic:,
+                                              practitioner_id: practitioner1.id,
+                                              patient_id: patient2.id,
+                                              start_time: TimeUtils.time_from_timezone(clinic.timezone,
+                                                                                       start_time).iso8601,
+                                              appointment_type: Appointments::AppointmentTypes::STANDARD
+                                            })
           expect(Appointment).not_to receive(:create!)
           described_class.call(args)
         end
@@ -150,13 +154,13 @@ RSpec.describe AppointmentService::CreateAppointment, type: :service do
           freeze_current_time = '2002-10-30 08:30'
           Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse(freeze_current_time)) do
             patient_appointment_start_time = '2002-11-30 10:00'
-            args = {
-              clinic_id: clinic.id,
+            args = described_class::INPUT.new(
+              clinic:,
               practitioner_id: practitioner1.id,
               patient_id: patient1.id,
               start_time: TimeUtils.time_from_timezone(clinic.timezone, patient_appointment_start_time).iso8601,
               appointment_type: Appointments::AppointmentTypes::STANDARD
-            }
+            )
             expect(Appointment).not_to receive(:create!)
             described_class.call(args)
           end
@@ -172,13 +176,14 @@ RSpec.describe AppointmentService::CreateAppointment, type: :service do
           freeze_current_time = '2002-10-30 08:30'
           Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse(freeze_current_time)) do
             practitioner_appointment_start_time = '2002-10-31 10:00'
-            args = {
-              clinic_id: clinic.id,
-              practitioner_id: practitioner1.id,
-              patient_id: patient2.id,
-              start_time: TimeUtils.time_from_timezone(clinic.timezone, practitioner_appointment_start_time).iso8601,
-              appointment_type: Appointments::AppointmentTypes::STANDARD
-            }
+            args = described_class::INPUT.new({
+                                                clinic:,
+                                                practitioner_id: practitioner1.id,
+                                                patient_id: patient2.id,
+                                                start_time: TimeUtils.time_from_timezone(clinic.timezone,
+                                                                                         practitioner_appointment_start_time).iso8601,
+                                                appointment_type: Appointments::AppointmentTypes::STANDARD
+                                              })
             expect(Appointment).not_to receive(:create!)
             described_class.call(args)
           end
