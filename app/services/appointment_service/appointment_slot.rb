@@ -10,11 +10,13 @@ module AppointmentService
     end
 
     def less_or_equal(comparable)
-      start_time < comparable.start_time && end_time <= comparable.start_time
+      other_start_time = comparable.start_time
+      start_time < other_start_time && end_time <= other_start_time
     end
 
     def greater_or_equal(comparable)
-      start_time >= comparable.end_time && end_time > comparable.end_time
+      other_end_time = comparable.end_time
+      start_time >= other_end_time && end_time > other_end_time
     end
 
     def to_iso8601(timezone = nil)
