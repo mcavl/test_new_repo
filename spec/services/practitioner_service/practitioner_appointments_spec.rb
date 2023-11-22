@@ -93,12 +93,10 @@ RSpec.describe PractitionerService::PractitionerAppointments, type: :service do
         current_time = '2002-10-31 9:51'
         Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse(current_time)) do
           args = AppointmentService::AppointmentAvailability::INPUT.new(
-            {
-              date: '2002-11-30',
-              practitioner_id: practitioner1.id,
-              clinic_id: 0,
-              appointment_type: Appointments::AppointmentTypes::STANDARD
-            }
+            date: '2002-11-30',
+            practitioner_id: practitioner1.id,
+            clinic_id: 0,
+            appointment_type: Appointments::AppointmentTypes::STANDARD
           )
           expect(::Appointment).not_to receive(:practitioner_agenda_on)
           described_class.call(args)
@@ -106,21 +104,19 @@ RSpec.describe PractitionerService::PractitionerAppointments, type: :service do
       end.to raise_error(::AppointmentService::Errors::ClinicNotFound, 'Clinic not found')
     end
 
-    it 'raises an error if clinic id is missing' do
+    it 'raises an error if clinic and clinic_id are missing' do
       expect do
         current_time = '2002-10-31 9:51'
         Timecop.freeze(Time.find_zone(TimeUtils.tz(gmt_offset)).parse(current_time)) do
           args = AppointmentService::AppointmentAvailability::INPUT.new(
-            {
-              date: '2002-11-30',
-              practitioner_id: practitioner1.id,
-              appointment_type: Appointments::AppointmentTypes::STANDARD
-            }
+            date: '2002-11-30',
+            practitioner_id: practitioner1.id,
+            appointment_type: Appointments::AppointmentTypes::STANDARD
           )
           expect(::Appointment).not_to receive(:practitioner_agenda_on)
           described_class.call(args)
         end
-      end.to raise_error(::AppointmentService::Errors::ClinicIdMissing, 'Missing clinic id')
+      end.to raise_error(::AppointmentService::Errors::ClinicMissing, 'Missing clinic')
     end
   end
 end

@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 module PractitionerService
+  ##
+  # PractitionerAppointments returns all appointments for a Practitioner on a specific day
+  # Clinic should be passed, so results can be properly scoped.
   class PractitionerAppointments < BaseService
-    INPUT = Struct.new(:practitioner_id, :clinic_id, :date, keyword_init: true)
+    INPUT = Struct.new(:practitioner_id, :clinic, :clinic_id, :date, keyword_init: true)
 
     def call
       validate_date
