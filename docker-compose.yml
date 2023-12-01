@@ -1,0 +1,9 @@
+services:
+  clinic_app:
+    image: clinic_app
+    command: ["bundle", "exec", "rspec --format documentation"]
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/usr/src/app
+
